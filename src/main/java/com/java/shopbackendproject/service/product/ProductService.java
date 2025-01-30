@@ -2,13 +2,20 @@ package com.java.shopbackendproject.service.product;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.java.shopbackendproject.model.Product;
 import com.java.shopbackendproject.exceptions.ProductNotFoundException;
 import com.java.shopbackendproject.repository.ProductRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
 public class ProductService implements IProductService {
 
-    private ProductRepository productRepository;
+
+    private final ProductRepository productRepository;
 
     @Override
     public Product addProduct(Product product) {
