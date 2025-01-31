@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.java.shopbackendproject.exceptions.ResourceNotFoundException;
-import com.java.shopbackendproject.model.Cart;
 import com.java.shopbackendproject.response.ApiResponse;
 import com.java.shopbackendproject.service.cart.ICartItemService;
 import com.java.shopbackendproject.service.cart.ICartService;
@@ -30,6 +29,9 @@ public class CartItemController {
             @RequestParam Long productId,
             @RequestParam Integer quantity) {
         try {
+            if (cartId == null) {
+                cartId = cartService.initializeNewCart();
+            }
             cartItemService.addItemToCart(cartId, productId, quantity);
             return ResponseEntity.ok(new ApiResponse("Add Item Success", null));
         } catch (ResourceNotFoundException e) {
