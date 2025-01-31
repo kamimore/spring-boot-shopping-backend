@@ -1,6 +1,8 @@
 package com.java.shopbackendproject.service.cart;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -31,10 +33,12 @@ public class CartItemService implements ICartItemService {
         // 5. If No, then initiate a new CartItem entry.
         Cart cart = cartService.getCart(cartId);
         Product product = productService.getProductById(productId);
-        CartItem cartItem = cart.getItems()
+        CartItem cartItem = Optional.ofNullable(cart.getItems())
+                .orElse(Collections.emptySet()) // Handle null case
                 .stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
-                .findFirst().orElse(new CartItem());
+                .findFirst()
+                .orElse(new CartItem());
         if (cartItem.getId() == null) {
             cartItem.setCart(cart);
             cartItem.setProduct(product);
