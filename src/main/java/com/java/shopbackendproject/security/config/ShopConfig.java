@@ -1,4 +1,4 @@
-package com.java.shopbackendproject.config;
+package com.java.shopbackendproject.security.config;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
