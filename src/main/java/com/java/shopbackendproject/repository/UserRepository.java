@@ -6,4 +6,5 @@ import com.java.shopbackendproject.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long>{
     Boolean existsByEmail(String email);
+    User findByEmail(String email);
 }
