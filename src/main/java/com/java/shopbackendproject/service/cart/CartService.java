@@ -1,6 +1,7 @@
 package com.java.shopbackendproject.service.cart;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.stereotype.Service;
@@ -8,8 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.java.shopbackendproject.exceptions.ResourceNotFoundException;
 import com.java.shopbackendproject.model.Cart;
+import com.java.shopbackendproject.model.User;
 import com.java.shopbackendproject.repository.CartItemRepository;
 import com.java.shopbackendproject.repository.CartRepository;
+import com.java.shopbackendproject.service.product.IProductService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +22,7 @@ public class CartService implements ICartService{
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final AtomicLong cartIdGenerator = new AtomicLong(0);
+    private final IProductService productService;
 
     @Override
     public Cart getCart(Long id) {
@@ -34,7 +38,7 @@ public class CartService implements ICartService{
     public void clearCart(Long id) {
         Cart cart = getCart(id);
         cartItemRepository.deleteAllByCartId(id);
-        cart.getItems().clear();
+        cart.clearCart();
         cartRepository.deleteById(id);
     }
 
@@ -44,11 +48,15 @@ public class CartService implements ICartService{
         return cart.getTotalAmount();
     }
 
-    public Long initializeNewCart(){
-        Cart newCart = new Cart();
-        Long newCartId = cartIdGenerator.incrementAndGet();
-        newCart.setId(newCartId);
-        return cartRepository.save(newCart).getId();
+
+    @Override
+    public Cart initializeNewCart(User user) {
+        return Optional.ofNullable(getCartByUserId(user.getId()))
+                .orElseGet(() -> {
+                    Cart cart = new Cart();
+                    cart.setUser(user);
+                    return cartRepository.save(cart);
+                });
     }
 
     @Override

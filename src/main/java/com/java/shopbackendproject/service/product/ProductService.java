@@ -11,6 +11,7 @@ import com.java.shopbackendproject.model.Image;
 import com.java.shopbackendproject.model.Product;
 import com.java.shopbackendproject.dto.ImageDto;
 import com.java.shopbackendproject.dto.ProductDto;
+import com.java.shopbackendproject.exceptions.AlreadyExistsException;
 import com.java.shopbackendproject.exceptions.ProductNotFoundException;
 import com.java.shopbackendproject.exceptions.ResourceNotFoundException;
 import com.java.shopbackendproject.repository.CategoryRepository;
@@ -32,6 +33,9 @@ public class ProductService implements IProductService {
 
     @Override
     public Product addProduct(AddProductRequest request) {
+        if (productExists(request.getName(), request.getBrand())){
+            throw new AlreadyExistsException(request.getBrand() +" "+request.getName()+ " already exists, you may update this product instead!");
+        }
         Category category = Optional.ofNullable(categoryRepository.findByName(request.getCategory().getName()))
                 .orElseGet(() -> {
                     Category newCategory = new Category(request.getCategory().getName());
@@ -39,6 +43,10 @@ public class ProductService implements IProductService {
                 });
         request.setCategory(category);
         return productRepository.save(createProduct(request, category));
+    }
+
+    private boolean productExists(String name , String brand) {
+        return productRepository.existsByNameAndBrand(name, brand);
     }
 
     private Product createProduct(AddProductRequest request, Category category) {
@@ -58,7 +66,7 @@ public class ProductService implements IProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found!"));
     }
 
-    @Override
+  @Override
     public void deleteProductById(Long id) {
         productRepository.findById(id).ifPresentOrElse(productRepository::delete,
                 () -> {
@@ -82,7 +90,6 @@ public class ProductService implements IProductService {
 
         Category category = categoryRepository.findByName(request.getCategory().getName());
         existingProduct.setCategory(category);
-
         return existingProduct;
     }
 
@@ -123,7 +130,7 @@ public class ProductService implements IProductService {
 
     @Override
     public List<ProductDto> getConvertedProducts(List<Product> products){
-        return products.stream().map(this::convertToDto).toList();
+      return products.stream().map(this::convertToDto).toList();
     }
 
     @Override
