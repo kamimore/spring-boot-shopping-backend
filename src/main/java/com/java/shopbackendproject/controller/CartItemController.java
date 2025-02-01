@@ -18,6 +18,7 @@ import com.java.shopbackendproject.service.cart.ICartItemService;
 import com.java.shopbackendproject.service.cart.ICartService;
 import com.java.shopbackendproject.service.user.IUserService;
 
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -28,17 +29,20 @@ public class CartItemController {
     private final ICartService cartService;
     private final IUserService userService;
 
+
     @PostMapping("/item/add")
     public ResponseEntity<ApiResponse> addItemToCart(
-            @RequestParam Long productId,
-            @RequestParam Integer quantity) {
+                                                     @RequestParam Long productId,
+                                                     @RequestParam Integer quantity) {
         try {
-            User user = userService.getUserById(1L);
-            Cart cart = cartService.initializeNewCart(user);
+               User user = userService.getAuthenticatedUser();
+              Cart cart= cartService.initializeNewCart(user);
             cartItemService.addItemToCart(cart.getId(), productId, quantity);
             return ResponseEntity.ok(new ApiResponse("Add Item Success", null));
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+        }catch (JwtException e){
+            return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(e.getMessage(), null));
         }
     }
 
@@ -53,9 +57,9 @@ public class CartItemController {
     }
 
     @PutMapping("/cart/{cartId}/item/{itemId}/update")
-    public ResponseEntity<ApiResponse> updateItemQuantity(@PathVariable Long cartId,
-            @PathVariable Long itemId,
-            @RequestParam Integer quantity) {
+    public  ResponseEntity<ApiResponse> updateItemQuantity(@PathVariable Long cartId,
+                                                           @PathVariable Long itemId,
+                                                           @RequestParam Integer quantity) {
         try {
             cartItemService.updateItemQuantity(cartId, itemId, quantity);
             return ResponseEntity.ok(new ApiResponse("Update Item Success", null));
